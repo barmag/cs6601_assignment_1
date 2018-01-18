@@ -17,11 +17,11 @@ class OpenMoveEvalFn:
 	are open for Opponent's player on the board.
 
 	Note:
-		1. Be very careful while doing opponent's moves. You might end up 
+		1. Be very careful while doing opponent's moves. You might end up
 		   reducing your own moves.
 		2. Here if you add overlapping moves of both queens, you are considering one available square twice.
-		   Consider overlapping square only once. In both cases- myMoves and in OppMoves. 
-		3. If you think of better evaluation function, do it in CustomEvalFn below. 
+		   Consider overlapping square only once. In both cases- myMoves and in OppMoves.
+		3. If you think of better evaluation function, do it in CustomEvalFn below.
 
 		Args
 			param1 (Board): The board and game state.
@@ -88,12 +88,14 @@ class CustomPlayer:
 		self.search_depth = search_depth
 
 	def move(self, game, legal_moves, time_left):
+		best_move_queen1, best_move_queen2, utility = self.minimax(game, time_left, depth=self.search_depth)
+		return best_move_queen1, best_move_queen2
 	"""Called to determine one move by your agent
 
 	Note:
-		1. Do NOT change the name of this 'move' function. We are going to call 
-		the this function directly. 
-		2. Change the name of minimax function to alphabeta function when 
+		1. Do NOT change the name of this 'move' function. We are going to call
+		the this function directly.
+		2. Change the name of minimax function to alphabeta function when
 		required. Here we are talking about 'minimax' function call,
 		NOT 'move' function name.
 
@@ -105,9 +107,6 @@ class CustomPlayer:
 		Returns:
 			(tuple, tuple): best_move_queen1, best_move_queen2
 		"""
-
-		best_move_queen1,best_move_queen2, utility = self.minimax(game, time_left, depth=self.search_depth)
-		return best_move_queen1,best_move_queen2
 
 	def utility(self, game, maximizing_player):
 		"""Can be updated if desired. Not compulsory. """
@@ -145,5 +144,5 @@ class CustomPlayer:
 		"""
 		# TODO: finish this function!
 		raise NotImplementedError
-	return best_move_queen1,best_move_queen2, val
+		return best_move_queen1,best_move_queen2, val
 

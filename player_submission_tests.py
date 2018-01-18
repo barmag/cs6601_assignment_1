@@ -3,7 +3,7 @@ import traceback
 from player_submission import OpenMoveEvalFn, CustomEvalFn, CustomPlayer
 from isolation import Board, game_as_text
 from test_players import RandomPlayer, HumanPlayer
-import resource
+#import resource
 from time import time, sleep
 
 def main():
@@ -36,16 +36,16 @@ def main():
         """Example test to make sure
         your minimax works, using the
         OpenMoveEvalFunction evaluation function.
-	This can be used for debugging your code
-	with different model Board states. 
-	Especially important to check alphabeta 
-	pruning"""
+        This can be used for debugging your code
+        with different model Board states. 
+        Especially important to check alphabeta 
+        pruning"""
         # create dummy 5x5 board
 
-        p1 = RandomPlayer()	
-	p2 = HumanPlayer()
+        p1 = RandomPlayer()
+        p2 = HumanPlayer()
         b = Board(p1, p2, 5, 5)
-	
+
         b.__board_state__ = [
             [0, 0 , 0, 0, 0],
             [0, 0,  0, 22, 0],
@@ -60,7 +60,7 @@ def main():
         b.move_count = 4
 
         output_b = b.copy()
-	legal_moves=b.get_legal_moves()
+        legal_moves=b.get_legal_moves()
         winner, move_history,  termination = b.play_isolation()
         print 'Minimax Test: Runs Successfully'
         # Uncomment to see example game
@@ -71,30 +71,30 @@ def main():
         print 'Minimax Test: ERROR OCCURRED'
         print traceback.format_exc()
 
-       
+
 
     """Example test you can run
     to make sure your AI does better
-    than random."""    
+    than random."""
     try:
-	r = RandomPlayer()
-	h = CustomPlayer()
-	game = Board(r, h, 7, 7)
-	output_b = game.copy()
-	winner, move_history, termination = game.play_isolation()
-	if 'CustomPlayer' in str(winner):
-	    print 'CustomPlayer Test: CustomPlayer Won'	   
-	else:
-	    print 'CustomPlayer Test: CustomPlayer Lost'
-	# Uncomment to see game
-	# print game_as_text(winner, move_history, termination, output_b)
+        r = RandomPlayer()
+        h = CustomPlayer()
+        game = Board(r, h, 7, 7)
+        output_b = game.copy()
+        winner, move_history, termination = game.play_isolation()
+        if 'CustomPlayer' in str(winner):
+            print 'CustomPlayer Test: CustomPlayer Won'
+        else:
+            print 'CustomPlayer Test: CustomPlayer Lost'
+        # Uncomment to see game
+        # print game_as_text(winner, move_history, termination, output_b)
     except NotImplementedError:
-	print 'CustomPlayer Test: Not Implemented'
+        print 'CustomPlayer Test: Not Implemented'
     except:
-	print 'CustomPlayer Test: ERROR OCCURRED'
-	print traceback.format_exc()
-	    
+        print 'CustomPlayer Test: ERROR OCCURRED'
+        print traceback.format_exc()
+
    
-    
+
 if __name__ == "__main__":
     main()
