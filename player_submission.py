@@ -69,7 +69,18 @@ class CustomEvalFn:
 		"""
 
 		# TODO: finish this function!
-		raise NotImplementedError
+		if maximizing_player_turn:
+			#player_q1, player_q2 = game.get_legal_moves().values()
+			opponent_q1, opponent_q2 = game.get_opponent_moves().values()
+		else:
+			#player_q1, player_q2 = game.get_opponent_moves().values()
+			opponent_q1, opponent_q2 = game.get_legal_moves().values()
+		#player_unique_moves = player_q1 + list(set(player_q2) - set(player_q1))
+		#player_moves = len(player_unique_moves)
+		opponent_unique_moves = opponent_q1 + list(set(opponent_q2) - set(opponent_q1))
+		opponent_moves = len(opponent_unique_moves)
+		return float(-opponent_moves)
+		#return float(player_moves - opponent_moves)
 
 
 class CustomPlayer:
