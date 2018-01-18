@@ -151,6 +151,7 @@ class Board:
         return {self.__active_players_queen1__:self.__get_moves__(move_by_q1) , self.__active_players_queen2__:self.__get_moves__(move_by_q2)}
 
     def get_legal_moves_of_queen1(self):
+
         return self.__get_moves__(self.__last_queen_move__[self.get_queen_name(self.__active_players_queen1__)])
 
     def get_legal_moves_of_queen2(self):
