@@ -93,7 +93,7 @@ class CustomPlayer:
 	to make sure it properly uses minimax
 	and alpha-beta to return a good move."""
 
-	def __init__(self, search_depth, eval_fn=OpenMoveEvalFn()):
+	def __init__(self, search_depth=1, eval_fn=OpenMoveEvalFn()):
 		"""Initializes your player.
 
 		if you find yourself with a superior eval function, update the default
@@ -143,9 +143,38 @@ class CustomPlayer:
 		Returns:
 			(tuple,tuple, int): best_move_queen1,best_move_queen2, val
 		"""
-	# TODO: finish this function!
-		raise NotImplementedError
-		return best_move_queen1,best_move_queen2, best_val
+		moves_q1, moves_q2 = game.get_legal_moves().values()
+		if len(moves_q1) > 0:
+			best_move_queen1 = moves_q1[0]
+		else:
+			return None, None, -float("inf")
+		if len(moves_q2) > 0:
+			best_move_queen1 = moves_q2[0]
+		else:
+			return None, None, -float("inf")
+		all_moves = self.combine_moves(moves_q1, moves_q2)
+		best_move_queen1, best_move_queen2 = max(all_moves, key=lambda m: self.min_minmax(game.forecast_move(m[0], m[1])))
+		return best_move_queen1,best_move_queen2, 0
+
+	def min_minmax(self, game):
+		# just start with one level to test first submission
+		moves_q1, moves_q2 = game.get_legal_moves().values()
+		if len(moves_q1) > 0:
+			best_move_queen1 = moves_q1[0]
+		else:
+			return -float("inf")
+		if len(moves_q2) > 0:
+			best_move_queen1 = moves_q2[0]
+		else:
+			return -float("inf")
+		all_moves = self.combine_moves(moves_q1, moves_q2)
+		h_values = {m: self.utility(game.forecast_move(m[0], m[1]), True) for m in all_moves}
+		v = min(h_values.values())
+		return v
+
+	def combine_moves(self, q1_moves, q2_moves):
+		all_moves = [(q1, q2) for q1 in q1_moves for q2 in q2_moves if q1 != q2]
+		return all_moves
 
 	def alphabeta(self, game, time_left, depth, alpha=float("-inf"), beta=float("inf"),maximizing_player=True):
 		"""Implementation of the alphabeta algorithm
