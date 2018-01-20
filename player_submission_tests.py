@@ -30,7 +30,7 @@ def main():
 		h = OpenMoveEvalFn()
 		print 'OpenMoveEvalFn Test: This board has a score of %s.' % (h.score(sample_board))
 
-		winner, move_history,  termination = sample_board.play_isolation()
+		winner, move_history,  termination = sample_board.play_isolation(time_limit=5000)
 		assert isinstance(winner, object)
 		print winner
 		print move_history
