@@ -94,7 +94,7 @@ class CustomPlayer:
     to make sure it properly uses minimax
     and alpha-beta to return a good move."""
 
-    def __init__(self, search_depth=1, eval_fn=OpenMoveEvalFn()):
+    def __init__(self, search_depth=3, eval_fn=OpenMoveEvalFn()):
         """Initializes your player.
 
         if you find yourself with a superior eval function, update the default
@@ -106,9 +106,11 @@ class CustomPlayer:
         """
         self.eval_fn = eval_fn
         self.search_depth = search_depth
+        self.alpha = - float("inf")
+        self.beta = float("inf")
 
     def move(self, game, legal_moves, time_left):
-        best_move_queen1, best_move_queen2, utility = self.minimax(game, time_left, depth=self.search_depth)
+        best_move_queen1, best_move_queen2, utility = self.alphabeta(game, time_left, depth=self.search_depth)
         return best_move_queen1, best_move_queen2
     """Called to determine one move by your agent
 
@@ -215,7 +217,72 @@ class CustomPlayer:
         Returns:
             (tuple,tuple, int): best_move_queen1,best_move_queen2, val
         """
-        # TODO: finish this function!
-        raise NotImplementedError
-        return best_move_queen1,best_move_queen2, val
+        start = time.time()
+        v, self.alpha, self.beta = -float("inf"), -float("inf"), float("inf")
+        vx, best_move_queen1, best_move_queen2 = self.max_ab(game, depth, time_left, self.alpha, self.beta)
+
+        # print time_left()
+        # best_move_queen1, best_move_queen2 = max(all_moves, key=lambda m: self.min_minmax(game.forecast_move(m[0], m[1])))
+        print time.time() - start
+        return best_move_queen1, best_move_queen2, vx
+
+    def max_ab(self, game, depth, time_left, alpha, beta):
+        moves_q1, moves_q2 = game.get_legal_moves().values()
+        if len(moves_q1) > 0:
+            best_move_queen1 = moves_q1[0]
+        else:
+            return -float("inf"), None, None
+        if len(moves_q2) > 0:
+            best_move_queen2 = moves_q2[0]
+        else:
+            return -float("inf"), None, None
+
+        v = -float("inf")
+        all_actions = self.combine_moves(moves_q1, moves_q2)
+        depth = depth - 1
+        #    return self.utility(game, True), best_move_queen1, best_move_queen2
+        for m1, m2 in all_actions:
+            if time_left() < 1.5:
+                return v, best_move_queen1, best_move_queen2
+            if depth < 0:
+                v_r = self.utility(game, True)
+            else:
+                v_r = self.min_ab(game.forecast_move(m1, m2), depth, time_left, self.alpha, self.beta)
+
+            # v = max(v, v_r)
+            if v_r >= v:
+                best_move_queen1, best_move_queen2, v = m1, m2, v_r
+            if v >= self.beta:
+                return v, best_move_queen1, best_move_queen2
+            self.alpha = max(self.alpha, v)
+        return v, best_move_queen1, best_move_queen2
+
+    def min_ab(self, game, depth, time_left, alpha, beta):
+        moves_q1, moves_q2 = game.get_legal_moves().values()
+        if len(moves_q1) > 0:
+            best_move_queen1 = moves_q1[0]
+        else:
+            return float("inf")
+        if len(moves_q2) > 0:
+            best_move_queen2 = moves_q2[0]
+        else:
+            return float("inf")
+
+        v = float("inf")
+        all_actions = self.combine_moves(moves_q1, moves_q2)
+        depth = depth - 1
+
+        #    return self.utility(game, True)
+        for m1, m2 in all_actions:
+            if time_left() < 1.5:
+                return v
+            if depth < 0:
+                v_r = self.utility(game, True)
+            else:
+                v_r, _, _ = self.max_ab(game.forecast_move(m1, m2), depth, time_left, self.alpha, self.beta)
+            v = min(v, v_r)
+            if v <= alpha:
+                return v
+            self.beta = min(self.beta, v)
+        return v
 

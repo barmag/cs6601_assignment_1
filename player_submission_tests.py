@@ -11,7 +11,7 @@ def main():
 	try:
 		# sample_board = Board(RandomPlayer(), RandomPlayer())
 		p1 = RandomPlayer()
-		p2 = CustomPlayer(1)
+		p2 = CustomPlayer(3)
 		sample_board = Board(p1, p2)
 		# setting up the board as though we've been playing
 		sample_board.move_count = 4
@@ -30,7 +30,7 @@ def main():
 		h = OpenMoveEvalFn()
 		print 'OpenMoveEvalFn Test: This board has a score of %s.' % (h.score(sample_board))
 
-		winner, move_history,  termination = sample_board.play_isolation(time_limit=5000)
+		winner, move_history,  termination = sample_board.play_isolation(time_limit=500000)
 		assert isinstance(winner, object)
 		print winner
 		print move_history
