@@ -3,6 +3,8 @@ from isolation import Board, game_as_text
 from random import randint
 import random
 import time
+from collections import Counter
+
 
 
 # This file is your main submission that will be graded against. Do not
@@ -69,20 +71,18 @@ class CustomEvalFn:
             float: The current state's score, based on your own heuristic.
 
         """
-
-        # TODO: finish this function!
         if maximizing_player_turn:
-            # player_q1, player_q2 = game.get_legal_moves().values()
+            player_q1, player_q2 = game.get_legal_moves().values()
             opponent_q1, opponent_q2 = game.get_opponent_moves().values()
         else:
-            # player_q1, player_q2 = game.get_opponent_moves().values()
+            player_q1, player_q2 = game.get_opponent_moves().values()
             opponent_q1, opponent_q2 = game.get_legal_moves().values()
-        # player_unique_moves = player_q1 + list(set(player_q2) - set(player_q1))
-        # player_moves = len(player_unique_moves)
+        player_unique_moves = player_q1 + list(set(player_q2) - set(player_q1))
+        player_moves = len(player_unique_moves)
         opponent_unique_moves = opponent_q1 + list(set(opponent_q2) - set(opponent_q1))
         opponent_moves = len(opponent_unique_moves)
-        return float(-opponent_moves)
-        # return float(player_moves - opponent_moves)
+        centrality_dist = abs(player_q1[0] - 7/2) + abs(player_q1[1] - 7/2) + abs(player_q2[0] - 7/2) + abs(player_q2[1] - 7/2)
+        return float(player_moves - opponent_moves - centrality_dist)
 
 
 class TimeoutException(Exception):
@@ -123,6 +123,8 @@ class CustomPlayer:
         else:
             best_move_queen1, best_move_queen2, utility = self.alphabeta(game, time_left, depth=self.search_depth)
 
+        if best_move_queen1 == best_move_queen2:
+            pass
         return best_move_queen1, best_move_queen2
 
     """Called to determine one move by your agent
@@ -160,20 +162,17 @@ class CustomPlayer:
             (tuple,tuple, int): best_move_queen1,best_move_queen2, val
         """
         moves_q1, moves_q2 = game.get_legal_moves().values()
-        if len(moves_q1) > 0:
-            best_move_queen1 = moves_q1[0]
-        else:
+        if len(moves_q1) <= 0:
             return None, None, -float("inf")
-        if len(moves_q2) > 0:
-            best_move_queen2 = moves_q2[0]
-        else:
+        if len(moves_q2) <= 0:
             return None, None, -float("inf")
         # return best_move_queen1, best_move_queen2, 0
         all_moves = self.combine_moves(moves_q1, moves_q2)
+        best_move_queen1, best_move_queen2 = all_moves[0]
         # start = time.time()
         v = -float("inf")
         for m1, m2 in all_moves:
-            if time_left() < 1.5:
+            if time_left() < self.time_threshold:
                 break
             vx = self.min_minmax(game.forecast_move(m1, m2), time_left)
             if vx > v:
@@ -188,13 +187,9 @@ class CustomPlayer:
     def min_minmax(self, game, time_left):
         # just start with one level to test first submission
         moves_q1, moves_q2 = game.get_legal_moves().values()
-        if len(moves_q1) > 0:
-            best_move_queen1 = moves_q1[0]
-        else:
+        if len(moves_q1) <= 0:
             return -float("inf")
-        if len(moves_q2) > 0:
-            best_move_queen1 = moves_q2[0]
-        else:
+        if len(moves_q2) <= 0:
             return -float("inf")
         # return self.utility(game, True)
         random_sample = False  # len(moves_q1) * len(moves_q2) > 50
@@ -202,7 +197,7 @@ class CustomPlayer:
         # h_values = {m: self.utility(game.forecast_move(m[0], m[1]), True) for m in all_moves}
         v = float("inf")
         for m1, m2 in all_moves:
-            if time_left() < 1.5:
+            if time_left() < self.time_threshold:
                 return v
             vx = self.utility(game.forecast_move(m1, m2), True)
             if vx < v:
@@ -215,8 +210,18 @@ class CustomPlayer:
         # factor = 4 if random_sample else 1
         # all_moves = [(q1, q2) for q1 in q1_moves for q2 in q2_moves if (q1 != q2 and randint(0, 24)%factor == 0)]
         all_moves = [(q1, q2) for q1 in q1_moves for q2 in q2_moves if (q1 != q2)]
-        if self.useMiniMax:
-            random.shuffle(all_moves)
+        original_len = len(all_moves)
+        # random.shuffle(all_moves)
+        # return all_moves
+        if len(all_moves) > 50 and not self.useMiniMax:
+            count = Counter(frozenset(q) for q in all_moves)
+            duplicates = [tuple(sorted(q)) for q in count if count[q] > 1]
+            all_moves = [q for q in all_moves if q not in duplicates]
+            if len(all_moves) == 0 and original_len != 0:
+                pass
+            # print "{1} dups {0}".format(len(duplicates), len(all_moves))
+        # if self.useMiniMax:
+        # random.shuffle(all_moves)
         return all_moves
 
     def alphabeta(self, game, time_left, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
@@ -246,21 +251,21 @@ class CustomPlayer:
         # print time_left()
         # best_move_queen1, best_move_queen2 = max(all_moves, key=lambda m: self.min_minmax(game.forecast_move(m[0], m[1])))
         print time.time() - start
+        print "best move AB: {0}, {1}".format(best_move_queen1, best_move_queen2)
         return best_move_queen1, best_move_queen2, vx
 
     def max_ab(self, game, depth, time_left, alpha, beta):
         moves_q1, moves_q2 = game.get_legal_moves().values()
-        if len(moves_q1) > 0:
-            best_move_queen1 = moves_q1[0]
-        else:
+        if len(moves_q1) <= 0:
             return -float("inf"), None, None
-        if len(moves_q2) > 0:
-            best_move_queen2 = moves_q2[0]
-        else:
+        if len(moves_q2) <= 0:
             return -float("inf"), None, None
 
         v = -float("inf")
         all_actions = self.combine_moves(moves_q1, moves_q2)
+        if len(all_actions) == 0:
+            return -float("inf"), None, None
+        best_move_queen1, best_move_queen2 = all_actions[0]
         #    return self.utility(game, True), best_move_queen1, best_move_queen2
         for m1, m2 in all_actions:
             if time_left() < self.time_threshold:
@@ -270,6 +275,7 @@ class CustomPlayer:
                 pass
             if depth < 0:
                 v_r = self.utility(game.forecast_move(m1, m2), True)
+                # return self.utility(game, True), best_move_queen1, best_move_queen2
             else:
                 v_r = self.min_ab(game.forecast_move(m1, m2), depth - 1, time_left, self.alpha, self.beta)
 
@@ -301,7 +307,8 @@ class CustomPlayer:
                 # return v
                 raise TimeoutException()
             if depth < 0:
-                v_r = self.utility(game.forecast_move(m1, m2), True)
+                # v_r = self.utility(game.forecast_move(m1, m2), True)
+                return self.utility(game.forecast_move(m1, m2), False), best_move_queen1, best_move_queen2
             else:
                 v_r, _, _ = self.max_ab(game.forecast_move(m1, m2), depth - 1, time_left, self.alpha, self.beta)
             v = min(v, v_r)
