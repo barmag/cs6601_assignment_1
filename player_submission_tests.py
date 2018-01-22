@@ -32,8 +32,8 @@ def main():
         num_wins = 0
         for i in range(0, 100):
             p1x = CustomPlayer(useMiniMax=True) #, eval_fn=CustomEvalFn())
-            p2x = CustomPlayer(3)
-            if(i%2 == 3):
+            p2x = CustomPlayer(eval_fn=CustomEvalFn())
+            if i%2 == 0:
                 sample_boardx = Board(p2x, p1x)
             else:
                 sample_boardx = Board(p1x, p2x)
@@ -49,11 +49,14 @@ def main():
             ]
             sample_board.__last_queen_move__ = {sample_boardx.queen_11: (0, 0), sample_boardx.queen_12: (4, 5),
                                                 sample_boardx.queen_21: (0, 4), sample_boardx.queen_22: (2, 2)}
-            winner, move_history,  termination = sample_boardx.play_isolation(time_limit=120000)
+            winner, move_history,  termination = sample_boardx.play_isolation(time_limit=10000)
             assert isinstance(winner, object)
             if isinstance(winner, CustomPlayer) and not winner.useMiniMax:
                 num_wins = num_wins+1
-            print winner if not winner.useMiniMax else "lost" + " " + str(num_wins)
+            if isinstance(winner, RandomPlayer) and not winner.p_id == 1:
+                num_wins = num_wins+1
+            print str(winner) + " " + str(num_wins) + " of " + str(i+1) if not winner.useMiniMax else "lost" + " " + str(num_wins) + " " + " of " + str(i+1)
+            # print str(winner) + " " + str(num_wins) + " of " + str(i + 1) if winner.p_id == 1 else "lost" + " " + str(num_wins) + " " + " of " + str(i + 1)
             print move_history
             print termination
         print "n: " + str(num_wins)

@@ -1,8 +1,9 @@
 from random import randint
 
 class RandomPlayer():
-    """Player that chooses a move randomly."""    
-
+    """Player that chooses a move randomly."""
+    def __init__(self, p_id=1):
+        self.p_id = id
     def move(self, game, legal_moves, time_left):	
 	flag=True
 	while flag:

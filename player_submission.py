@@ -2,6 +2,7 @@
 from isolation import Board, game_as_text
 from random import randint
 import time
+import math
 
 
 # This file is your main submission that will be graded against. Do not
@@ -71,16 +72,20 @@ class CustomEvalFn:
 
         # TODO: finish this function!
         #if maximizing_player_turn:
-            # player_q1, player_q2 = game.get_legal_moves().values()
+        c_q1 = game.__last_queen_move__[game.get_queen_name(game.__active_players_queen1__)]
+        c_q2 = game.__last_queen_move__[game.get_queen_name(game.__active_players_queen2__)]
+        player_q1, player_q2 = game.get_legal_moves().values()
         opponent_q1, opponent_q2 = game.get_opponent_moves().values()
         #else:
             # player_q1, player_q2 = game.get_opponent_moves().values()
          #   opponent_q1, opponent_q2 = game.get_legal_moves().values()
-        # player_unique_moves = player_q1 + list(set(player_q2) - set(player_q1))
-        # player_moves = len(player_unique_moves)
+        player_unique_moves = player_q1 + list(set(player_q2) - set(player_q1))
+        player_moves = len(player_unique_moves)
         opponent_unique_moves = opponent_q1 + list(set(opponent_q2) - set(opponent_q1))
         opponent_moves = len(opponent_unique_moves)
-        return float(-opponent_moves)
+        # distance = sum(map(lambda q: abs(q[0][0] - q[1][0]) + abs(q[0][1] - q[1][1]), zip(player_q1, player_q2)))
+        distance = abs(c_q1[0] - c_q2[0]) + abs(c_q1[1] - c_q2[1])
+        return float(player_moves-opponent_moves) - distance
         # return float(player_moves - opponent_moves)
 
 
@@ -115,12 +120,18 @@ class CustomPlayer:
         self.beta = float("inf")
         self.time_threshold = 500
         self.useMiniMax = useMiniMax
+        self.turn = 0
+        self.moves_cache = {}
+        self.pruned = 0
 
     def move(self, game, legal_moves, time_left):
         if self.useMiniMax:
             best_move_queen1, best_move_queen2, utility = self.minimax(game, time_left, 1)
         else:
+            self.turn = self.turn + 1
+            print str.format("turn: {0}", self.turn)
             best_move_queen1, best_move_queen2, utility = self.alphabeta(game, time_left, depth=self.search_depth)
+            print str.format(" end turn: {0}", self.turn)
         return best_move_queen1, best_move_queen2
 
     """Called to determine one move by your agent
@@ -214,13 +225,17 @@ class CustomPlayer:
         factor = 1
         if random_sample:
             all_len = len(q1_moves) * len(q2_moves)
-            if all_len > 50:
-                factor = all_len / 50
-        all_moves = [(q1, q2) for q1 in q1_moves for q2 in q2_moves if (q1 != q2 and randint(0, 50)%factor == 0)]
+            if all_len > 1000:
+                print "all len: " + str(all_len)
+                factor = all_len / 500
+            else:
+                return [(q1, q2) for q1 in q1_moves for q2 in q2_moves if (q1 != q2)]
+        all_moves = [(q1, q2) for q1 in q1_moves for q2 in q2_moves if (q1[0] != q2[0] and q1[1] != q2[1] and randint(0, 50)%factor == 0)]
         # all_moves = [(q1, q2) for q1 in q1_moves for q2 in q2_moves if (q1 != q2)]
         if factor == 4:
             pass
-        # print "len: " + str(len(all_moves))
+        if len(all_moves) > 500:
+            print "len: " + str(len(all_moves))
         return all_moves
 
     def alphabeta(self, game, time_left, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
@@ -240,12 +255,17 @@ class CustomPlayer:
         start = time.time()
         v, self.alpha, self.beta = -float("inf"), -float("inf"), float("inf")
         for i in range(1, 50):
+            # print self.alpha, self.beta
+            self.pruned = 0
             self.alpha, self.beta = -float("inf"), float("inf")
+            # self.alpha, self.beta = self.alpha*randint(1, 3), self.beta*randint(1, 3)
             try:
                 vx, best_move_queen1, best_move_queen2 = self.max_ab(game, i, time_left, self.alpha, self.beta)
             except TimeoutException:
                 print "timed out at level: " + str(i)
                 break
+            finally:
+                print "pruned {0}".format(self.pruned)
 
         # print time_left()
         # best_move_queen1, best_move_queen2 = max(all_moves, key=lambda m: self.min_minmax(game.forecast_move(m[0], m[1])))
@@ -279,6 +299,7 @@ class CustomPlayer:
             if v_r >= v:
                 best_move_queen1, best_move_queen2, v = m1, m2, v_r
             if v >= self.beta:
+                self.pruned = self.pruned+1
                 return v, best_move_queen1, best_move_queen2
             self.alpha = max(self.alpha, v)
         return v, best_move_queen1, best_move_queen2
@@ -308,6 +329,7 @@ class CustomPlayer:
                 v_r, _, _ = self.max_ab(game.forecast_move(m1, m2), depth - 1, time_left, self.alpha, self.beta)
             v = min(v, v_r)
             if v <= alpha:
+                self.pruned = self.pruned+1
                 return v
             self.beta = min(self.beta, v)
         return v
