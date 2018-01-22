@@ -30,13 +30,14 @@ def main():
         h = OpenMoveEvalFn()
         print 'OpenMoveEvalFn Test: This board has a score of %s.' % (h.score(sample_board))
         num_wins = 0
+        board_size = 5
         for i in range(0, 100):
             p1x = CustomPlayer(useMiniMax=True) #, eval_fn=CustomEvalFn())
-            p2x = CustomPlayer(eval_fn=CustomEvalFn())
+            p2x = CustomPlayer()
             if i%2 == 0:
-                sample_boardx = Board(p2x, p1x)
+                sample_boardx = Board(p2x, p1x, board_size, board_size)
             else:
-                sample_boardx = Board(p1x, p2x)
+                sample_boardx = Board(p1x, p2x, board_size, board_size)
             sample_board.move_count = 4
             sample_board.__board_state__ = [
                 [11, 0, 0, 0, 21, 0, 0],
@@ -49,13 +50,14 @@ def main():
             ]
             sample_board.__last_queen_move__ = {sample_boardx.queen_11: (0, 0), sample_boardx.queen_12: (4, 5),
                                                 sample_boardx.queen_21: (0, 4), sample_boardx.queen_22: (2, 2)}
-            winner, move_history,  termination = sample_boardx.play_isolation(time_limit=10000)
+            winner, move_history,  termination = sample_boardx.play_isolation(time_limit=360000)
             assert isinstance(winner, object)
-            if isinstance(winner, CustomPlayer) and not winner.useMiniMax:
+            if isinstance(winner, CustomPlayer) and winner == p2x:
                 num_wins = num_wins+1
             if isinstance(winner, RandomPlayer) and not winner.p_id == 1:
                 num_wins = num_wins+1
             print str(winner) + " " + str(num_wins) + " of " + str(i+1) if not winner.useMiniMax else "lost" + " " + str(num_wins) + " " + " of " + str(i+1)
+            print game_as_text(winner, move_history, termination, sample_boardx.copy())
             # print str(winner) + " " + str(num_wins) + " of " + str(i + 1) if winner.p_id == 1 else "lost" + " " + str(num_wins) + " " + " of " + str(i + 1)
             print move_history
             print termination
