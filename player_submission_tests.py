@@ -33,7 +33,7 @@ def main():
         board_size = 7
         for i in range(0, 20):
             p1x = CustomPlayer(useMiniMax=True) #, eval_fn=CustomEvalFn())
-            p2x = CustomPlayer(eval_fn=CustomEvalFn())
+            p2x = CustomPlayer()
             if i%2 == 0:
                 sample_boardx = Board(p2x, p1x, board_size, board_size)
             else:
