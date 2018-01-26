@@ -30,10 +30,12 @@ def main():
         h = OpenMoveEvalFn()
         print 'OpenMoveEvalFn Test: This board has a score of %s.' % (h.score(sample_board))
         num_wins = 0
-        board_size = 7
-        for i in range(0, 20):
+        board_size = 5
+        for i in range(0, 200):
             p1x = CustomPlayer(useMiniMax=True) #, eval_fn=CustomEvalFn())
             p2x = CustomPlayer()
+            # p1x = RandomPlayer()
+            # p2x = RandomPlayer()
             if i%2 == 0:
                 sample_boardx = Board(p2x, p1x, board_size, board_size)
             else:
@@ -52,14 +54,13 @@ def main():
                                                 sample_boardx.queen_21: (0, 4), sample_boardx.queen_22: (2, 2)}
             winner, move_history,  termination = sample_boardx.play_isolation(time_limit=10000)
             assert isinstance(winner, object)
-            if isinstance(winner, CustomPlayer) and winner == p2x:
+            if winner == p2x:
                 num_wins = num_wins+1
-            if isinstance(winner, RandomPlayer) and not winner.p_id == 1:
-                num_wins = num_wins+1
+
             print game_as_text(winner, move_history, termination, sample_boardx.copy())
             # print str(winner) + " " + str(num_wins) + " of " + str(i + 1) if winner.p_id == 1 else "lost" + " " + str(num_wins) + " " + " of " + str(i + 1)
             print str(winner) + " " + str(num_wins) + " of " + str(
-                i + 1) if not winner.useMiniMax else "lost" + " " + str(num_wins) + " " + " of " + str(i + 1)
+                i + 1) if not winner == p1x else "lost" + " " + str(num_wins) + " " + " of " + str(i + 1)
             print move_history
             print termination
         print "n: " + str(num_wins)
