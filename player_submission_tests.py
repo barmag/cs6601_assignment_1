@@ -30,8 +30,8 @@ def main():
         h = OpenMoveEvalFn()
         print 'OpenMoveEvalFn Test: This board has a score of %s.' % (h.score(sample_board))
         num_wins = 0
-        board_size = 5
-        for i in range(0, 200):
+        board_size = 7
+        for i in range(0, 20):
             p1x = CustomPlayer(useMiniMax=True) #, eval_fn=CustomEvalFn())
             p2x = CustomPlayer()
             # p1x = RandomPlayer()
